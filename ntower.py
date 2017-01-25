@@ -44,6 +44,21 @@ Output:
 | 0 0 1 1 |
 | 0 0 1 1 |
 +---------+
+
+
+WARNING:
+
+The function can only fill the 0 "vertically".
+It is not smart enough to handle following case:
+
++-------+
+| 1 1 1 |
+| 0 1 1 |
+| 0 1 1 |
++-------+
+
+If you want to do this, please transpose the input urself.
+
 '''
 
 import numpy as np
