@@ -69,16 +69,15 @@ def ntower(input_vv,level):
     one_count_v = [np.count_nonzero(input_v) for input_v in input_vv]
     suitable_idx_v = [i for i in range(size) if one_count_v[i] <= level]
     if len(suitable_idx_v) < level:
-        return input_vv, False
+        return False
     combination_vv = itertools.combinations(suitable_idx_v, level)
 
     action_done = False
 
-    output_vv = np.copy(input_vv)
     for combination_v in combination_vv:
         orr = np.zeros(size,dtype=bool)
         for combination in combination_v:
-            orr = np.logical_or(orr,output_vv[combination])
+            orr = np.logical_or(orr,input_vv[combination])
         if np.count_nonzero(orr) > level:
             continue
         action_done = True
@@ -86,21 +85,21 @@ def ntower(input_vv,level):
         for i in range(size):
             if i in combination_v:
                 continue
-            np.logical_and(output_vv[i],orr_not,output_vv[i])
+            np.logical_and(input_vv[i],orr_not,input_vv[i])
 
-    return output_vv, action_done
+    return action_done
 
 
 if __name__ == '__main__':
     import unittest
     class TestNTower(unittest.TestCase):
         def test_n_tower(self):
-            out,action_done = ntower(np.array([[1,0,0,0],[1,1,1,1],[1,1,1,1],[1,1,1,1]],dtype=np.bool),1)
-            self.assertEqual(np.logical_xor(out, np.array([[1,0,0,0],[0,1,1,1],[0,1,1,1],[0,1,1,1]],dtype=np.bool)).any(),False)
-            self.assertEqual(action_done, True)
+            x = np.array([[1,0,0,0],[1,1,1,1],[1,1,1,1],[1,1,1,1]],dtype=np.bool)
+            self.assertEqual(ntower(x,1), True)
+            self.assertEqual(np.logical_xor(x, np.array([[1,0,0,0],[0,1,1,1],[0,1,1,1],[0,1,1,1]],dtype=np.bool)).any(),False)
 
-            out,action_done = ntower(np.array([[1,1,0,0],[1,1,0,0],[1,1,1,1],[1,1,1,1]],dtype=np.bool),2)
-            self.assertEqual(np.logical_xor(out, np.array([[1,1,0,0],[1,1,0,0],[0,0,1,1],[0,0,1,1]],dtype=np.bool)).any(),False)
-            self.assertEqual(action_done, True)
+            x = np.array([[1,1,0,0],[1,1,0,0],[1,1,1,1],[1,1,1,1]],dtype=np.bool)
+            self.assertEqual(ntower(x,2), True)
+            self.assertEqual(np.logical_xor(x, np.array([[1,1,0,0],[1,1,0,0],[0,0,1,1],[0,0,1,1]],dtype=np.bool)).any(),False)
 
     unittest.main()
