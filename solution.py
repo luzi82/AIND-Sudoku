@@ -1,3 +1,9 @@
+import utils
+import sudoku_convert
+import ntower
+import numpy as np
+import sudoku
+
 assignments = []
 
 def assign_value(values, box, value):
@@ -21,30 +27,52 @@ def naked_twins(values):
 
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
+    
+    nparray = sudoku_convert.value_to_nparray(values)
+    while (True):
+        action_done = False
+        nparray102 = np.moveaxis(nparray,range(3),[1,0,2])
+        for i in range(sudoku_convert.board_size):
+            action_done = ntower.ntower(nparray[i],2) or action_done
+            action_done = ntower.ntower(nparray102[i],2) or action_done
+        nparray = sudoku.w_transform(nparray)
+        for i in range(sudoku_convert.board_size):
+            action_done = ntower.ntower(nparray[i],2) or action_done
+        nparray = sudoku.w_transform_reverse(nparray)
+        if not action_done:
+            break
+    
+    return sudoku_convert.nparray_to_value(nparray)
 
-def cross(A, B):
-    "Cross product of elements in A and elements in B."
-    pass
+#def cross(A, B):
+#    "Cross product of elements in A and elements in B."
+#    pass
 
-def grid_values(grid):
-    """
-    Convert grid into a dict of {square: char} with '123456789' for empties.
-    Args:
-        grid(string) - A grid in string form.
-    Returns:
-        A grid in dictionary form
-            Keys: The boxes, e.g., 'A1'
-            Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
-    """
-    pass
+cross = utils.cross
 
-def display(values):
-    """
-    Display the values as a 2-D grid.
-    Args:
-        values(dict): The sudoku in dictionary form
-    """
-    pass
+#def grid_values(grid):
+#    """
+#    Convert grid into a dict of {square: char} with '123456789' for empties.
+#    Args:
+#        grid(string) - A grid in string form.
+#    Returns:
+#        A grid in dictionary form
+#            Keys: The boxes, e.g., 'A1'
+#            Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
+#    """
+#    pass
+
+grid_values = utils.grid_values
+
+#def display(values):
+#    """
+#    Display the values as a 2-D grid.
+#    Args:
+#        values(dict): The sudoku in dictionary form
+#    """
+#    pass
+
+display = utils.display
 
 def eliminate(values):
     pass

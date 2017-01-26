@@ -72,7 +72,7 @@ def ntower(input_vv,level):
         return False
     combination_vv = itertools.combinations(suitable_idx_v, level)
 
-    action_done = False
+    non_zero_count = np.count_nonzero(input_vv)
 
     for combination_v in combination_vv:
         orr = np.zeros(size,dtype=bool)
@@ -80,14 +80,13 @@ def ntower(input_vv,level):
             orr = np.logical_or(orr,input_vv[combination])
         if np.count_nonzero(orr) > level:
             continue
-        action_done = True
         orr_not = np.logical_not(orr)
         for i in range(size):
             if i in combination_v:
                 continue
             np.logical_and(input_vv[i],orr_not,input_vv[i])
 
-    return action_done
+    return np.count_nonzero(input_vv) != non_zero_count
 
 
 if __name__ == '__main__':
