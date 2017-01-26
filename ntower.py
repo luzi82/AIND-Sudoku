@@ -64,10 +64,10 @@ If you want to do this, please transpose the input urself.
 import numpy as np
 import itertools
 
-def ntower(input_vv,level):
+def ntower(input_vv,level,min_level=1):
     size = len(input_vv)
     one_count_v = [np.count_nonzero(input_v) for input_v in input_vv]
-    suitable_idx_v = [i for i in range(size) if one_count_v[i] <= level]
+    suitable_idx_v = [i for i in range(size) if (one_count_v[i] <= level) and (one_count_v[i] >= min_level)]
     if len(suitable_idx_v) < level:
         return False
     combination_vv = itertools.combinations(suitable_idx_v, level)

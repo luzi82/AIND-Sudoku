@@ -3,6 +3,7 @@ import sudoku_convert
 import ntower
 import numpy as np
 import sudoku
+import itertools
 
 assignments = []
 
@@ -15,6 +16,13 @@ def assign_value(values, box, value):
     if len(value) == 1:
         assignments.append(values.copy())
     return values
+
+def assign_value_nparray(values, nparray):
+    value0 = nparray_to_value(nparray)
+    for box in values:
+        if values[box] == value0[box]:
+            continue
+        assign_value(values, box, value0[box])
 
 def naked_twins(values):
     """Eliminate values using the naked twins strategy.
@@ -82,7 +90,70 @@ def only_choice(values):
     pass
 
 def reduce_puzzle(values):
-    pass
+    nparray = sudoku_convert.value_to_nparray(values)
+    while(True):
+        good = False
+        good = good or reduce_puzzle_ntower(nparray,1,1,False)
+        good = good or sub_group_exclusion(nparray)
+        good = good or reduce_puzzle_ntower(nparray,2,2,True)
+        good = good or reduce_puzzle_ntower(nparray,3,2,True)
+        good = good or reduce_puzzle_ntower(nparray,4,2,True)
+        if not good:
+            break
+        assign_value_nparray(values, nparray)
+
+def reduce_puzzle_ntower(nparray,level,min_level,ret_when_ok):
+    ret = False
+    for axis in itertools.permutations(range(3)):
+        nparray0 = np.moveaxis(nparray,range(3),axis)
+        for nparray0_i in nparray0:
+            ret = ntower.ntower(nparray0_i,level,min_level) or ret
+            if ret and ret_when_ok:
+                return True
+    ret = reduce_puzzle_ntower_w(nparray,level,min_level,ret_when_ok) or ret
+    if ret and ret_when_ok:
+        return True
+    ret = reduce_puzzle_ntower_w(np.moveaxis(nparray,range(3),[1,0,2]),level,min_level,ret_when_ok) or ret
+    if ret and ret_when_ok:
+        return True
+    return ret
+
+def reduce_puzzle_ntower_w(nparray,level,min_level,ret_when_ok):
+    nparray0 = sudoku.w_transform(nparray)
+    ret = False
+    ret = (ret_when_ok and ret) or reduce_puzzle_ntower_w_0(nparray0,level,min_level,ret_when_ok) or ret
+    ret = (ret_when_ok and ret) or reduce_puzzle_ntower_w_0(np.moveaxis(nparray0,range(3),[0,2,1]),level,min_level,ret_when_ok) or ret
+    if not ret:
+        return ret
+    nparray1 = sudoku.w_transform_reverse(nparray0)
+    np.copyto(nparray,nparray1)
+    return ret
+
+def reduce_puzzle_ntower_w_0(nparray,level,min_level,ret_when_ok):
+    for nparray0_i in nparray0:
+        ret = ntower.ntower(nparray0_i,level,min_level) or ret
+        if ret and ret_when_ok:
+            return True
+    return ret
+
+def sub_group_exclusion(nparray):
+    ret = False
+    nparray_v = sudoku.v_transform(nparray)
+    nparray_vt = np.moveaxis(nparray_v,range(3),[0,2,1])
+    while(True):
+        ret_i = False
+        for nparray_vi in nparray_v:
+            ret_i = ntower.ntower(nparray_vi,1) or ret_i
+        for nparray_vi in nparray_vt:
+            ret_i = ntower.ntower(nparray_vi,1) or ret_i
+        ret = ret or ret_i
+        if not ret_i:
+            break
+    if not ret:
+        return ret
+    nparray0 = sudoku.v_transform_reverse(nparray_v)
+    np.logical_and(nparray,nparray0,nparray)
+    return ret
 
 def search(values):
     pass
