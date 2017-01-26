@@ -41,7 +41,8 @@ def naked_twins(values):
         nparray = sudoku.w_transform_reverse(nparray)
         if not action_done:
             break
-    
+        break
+
     return sudoku_convert.nparray_to_value(nparray)
 
 #def cross(A, B):
