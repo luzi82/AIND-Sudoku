@@ -28,16 +28,16 @@ def v_transform_reverse(nparray):
     return nparray
 
 def pick_diag(nparray):
-    ret = np.zeros([2,9,9],dtype=np.int_)
+    diag = np.zeros([2,9,9],dtype=np.bool)
     for i in range(9):
-        np.copyto(ret[0][i], nparray[i][i])
-        np.copyto(ret[1][i], nparray[i][8-i])
-    return ret
+        np.copyto(diag[0][i], nparray[i][i])
+        np.copyto(diag[1][i], nparray[i][8-i])
+    return diag
 
-def pick_diag_reverse(nparray,diag):
+def put_diag(nparray,diag):
     for i in range(9):
-        np.copyto(nparray[i][i],   ret[0][i])
-        np.copyto(nparray[i][8-i], ret[1][i])
+        np.logical_and(nparray[i][i],   diag[0][i], nparray[i][i])
+        np.logical_and(nparray[i][8-i], diag[1][i], nparray[i][8-i])
 
 if __name__ == '__main__':
     import unittest
@@ -121,5 +121,81 @@ if __name__ == '__main__':
             self.assertEqual(nparray1[7][5][5],False)
             self.assertEqual(nparray1[7][5][6],True)
             self.assertEqual(nparray1[7][5][7],False)
+
+        def test_pick_diag(self):
+            '''
+            2........
+            .....62..
+            ..1....7.
+            ..6..8...
+            3...9...7
+            ...6..4..
+            .4....8..
+            ..52.....
+            ........3
+            '''
+            diagonal_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+            values = utils.grid_values(diagonal_grid)
+            nparray = sudoku_convert.value_to_nparray(values)
+            nparray0 = pick_diag(nparray)
+
+            self.assertEqual(nparray0[0][0][0],False)
+            self.assertEqual(nparray0[0][0][1],True)
+            self.assertEqual(nparray0[0][1][0],True)
+            self.assertEqual(nparray0[0][1][8],True)
+            self.assertEqual(nparray0[0][2][0],True)
+            self.assertEqual(nparray0[0][2][8],False)
+            self.assertEqual(nparray0[0][3][0],True)
+            self.assertEqual(nparray0[0][3][8],True)
+            self.assertEqual(nparray0[0][4][0],False)
+            self.assertEqual(nparray0[0][4][8],True)
+            self.assertEqual(nparray0[0][5][0],True)
+            self.assertEqual(nparray0[0][5][8],True)
+            self.assertEqual(nparray0[0][6][0],False)
+            self.assertEqual(nparray0[0][6][7],True)
+            self.assertEqual(nparray0[0][7][0],True)
+            self.assertEqual(nparray0[0][7][8],True)
+            self.assertEqual(nparray0[0][8][0],False)
+            self.assertEqual(nparray0[0][8][2],True)
+
+            self.assertEqual(nparray0[1][0][0],True)
+            self.assertEqual(nparray0[1][0][8],True)
+            self.assertEqual(nparray0[1][1][0],True)
+            self.assertEqual(nparray0[1][1][8],True)
+            self.assertEqual(nparray0[1][2][0],True)
+            self.assertEqual(nparray0[1][2][8],True)
+            self.assertEqual(nparray0[1][3][0],False)
+            self.assertEqual(nparray0[1][3][7],True)
+            self.assertEqual(nparray0[1][4][0],False)
+            self.assertEqual(nparray0[1][4][8],True)
+            self.assertEqual(nparray0[1][5][0],False)
+            self.assertEqual(nparray0[1][5][5],True)
+            self.assertEqual(nparray0[1][6][0],True)
+            self.assertEqual(nparray0[1][6][8],True)
+            self.assertEqual(nparray0[1][7][0],True)
+            self.assertEqual(nparray0[1][7][8],True)
+            self.assertEqual(nparray0[1][8][0],True)
+            self.assertEqual(nparray0[1][8][8],True)
+
+        def test_put_diag(self):
+            diagonal_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+            values = utils.grid_values(diagonal_grid)
+            nparray = sudoku_convert.value_to_nparray(values)
+            nparray0 = pick_diag(nparray)
+            
+            nparray0[0][1][3] = False
+            nparray0[0][7][5] = False
+            nparray0[1][2][1] = False
+            nparray0[1][8][0] = False
+            
+            put_diag(nparray,nparray0)
+            self.assertEqual(nparray[1][1][3],False)
+            self.assertEqual(nparray[1][1][0],True)
+            self.assertEqual(nparray[7][7][5],False)
+            self.assertEqual(nparray[7][7][0],True)
+            self.assertEqual(nparray[2][6][1],False)
+            self.assertEqual(nparray[2][6][0],True)
+            self.assertEqual(nparray[8][0][0],False)
+            self.assertEqual(nparray[8][0][8],True)
 
     unittest.main()
