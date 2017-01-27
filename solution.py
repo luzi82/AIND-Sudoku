@@ -90,33 +90,37 @@ display = utils.display
 #def only_choice(values):
 #    pass
 
-def reduce_puzzle(values):
+def reduce_puzzle(values,enable_diag):
     nparray = sudoku_convert.value_to_nparray(values)
     while(True):
         good = False
-        good = good or reduce_puzzle_ntower(nparray,1,1,False)
+        good = good or reduce_puzzle_ntower(nparray,1,1,False,enable_diag)
         good = good or sub_group_exclusion(nparray,True)
-        good = good or reduce_puzzle_ntower(nparray,2,2,True)
-        good = good or reduce_puzzle_ntower(nparray,3,2,True)
-        good = good or reduce_puzzle_ntower(nparray,4,2,True)
+        good = good or reduce_puzzle_ntower(nparray,2,2,True,enable_diag)
+        good = good or reduce_puzzle_ntower(nparray,3,2,True,enable_diag)
+        good = good or reduce_puzzle_ntower(nparray,4,2,True,enable_diag)
         if not good:
             break
         assign_value_nparray(values, nparray)
+        if np.count_nonzero(nparray) == 81:
+            break
     nparray_any2_all = np.any(nparray,2).all()
     return values if nparray_any2_all else False
 
-def reduce_puzzle_ntower(nparray,level,min_level,ret_when_ok):
+def reduce_puzzle_ntower(nparray,level,min_level,ret_when_ok,enable_diag):
+    # print('reduce_puzzle_ntower {}'.format(level))
     ret = False
     for axis in itertools.permutations(range(3)):
         nparray0 = np.moveaxis(nparray,range(3),axis)
         ret = reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok) or ret
         if ret and ret_when_ok:
             return True
-    nparray0 = sudoku.pick_diag(nparray)
-    ret = reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok) or ret
-    sudoku.put_diag(nparray,nparray0)
-    if ret and ret_when_ok:
-        return True
+    if enable_diag:
+        nparray0 = sudoku.pick_diag(nparray)
+        ret = reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok) or ret
+        sudoku.put_diag(nparray,nparray0)
+        if ret and ret_when_ok:
+            return True
     ret = reduce_puzzle_ntower_w(nparray,level,min_level,ret_when_ok) or ret
     if ret and ret_when_ok:
         return True
@@ -142,6 +146,7 @@ def reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok):
     return ret
 
 def sub_group_exclusion(nparray,ret_when_ok):
+    # print('sub_group_exclusion')
     ret = False
     ret = (ret_when_ok and ret) or sub_group_exclusion_0(nparray) or ret
     ret = (ret_when_ok and ret) or sub_group_exclusion_0(np.moveaxis(nparray,range(3),[1,0,2])) or ret
@@ -164,10 +169,11 @@ def sub_group_exclusion_0(nparray):
     np.logical_and(nparray,nparray0,nparray)
     return ret
 
-def search(values):
+def search(values,enable_diag):
+    # print('search')
     "Using depth-first search and propagation, create a search tree and solve the sudoku."
     # First, reduce the puzzle using the previous function
-    x = reduce_puzzle(values)
+    x = reduce_puzzle(values,enable_diag)
     if x == False:
         return False
 
@@ -189,7 +195,7 @@ def search(values):
     for c in list(values[min_box]):
         values0 = copy.copy(values)
         values0[min_box] = c
-        x = search(values0)
+        x = search(values0,enable_diag)
         if x != False:
             values.update(x)
             return values
@@ -197,7 +203,7 @@ def search(values):
     # If you're stuck, see the solution.py tab!
     return False
 
-def solve(grid):
+def solve(grid,enable_diag=True):
     """
     Find the solution to a Sudoku grid.
     Args:
@@ -206,7 +212,7 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
-    return search(grid_values(grid))
+    return search(grid_values(grid),enable_diag)
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
