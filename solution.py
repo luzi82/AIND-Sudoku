@@ -120,9 +120,6 @@ def reduce_puzzle_ntower(nparray,level,min_level,ret_when_ok):
     ret = reduce_puzzle_ntower_w(nparray,level,min_level,ret_when_ok) or ret
     if ret and ret_when_ok:
         return True
-    ret = reduce_puzzle_ntower_w(np.moveaxis(nparray,range(3),[1,0,2]),level,min_level,ret_when_ok) or ret
-    if ret and ret_when_ok:
-        return True
     return ret
 
 def reduce_puzzle_ntower_w(nparray,level,min_level,ret_when_ok):
