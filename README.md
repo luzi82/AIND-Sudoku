@@ -39,7 +39,7 @@ The data consists of a text file of diagonal sudokus for you to solve.
 
 ## Algorithm used here
 
-### Sudoku to N-Tower problems
+### Sudoku to N-Rook problems
 
 Instead of the reduction method provided by Udacity Lesson, here use another algorithm.
 
@@ -50,14 +50,14 @@ In fact, the 9x9x9 grid can be converted to the "values" dict, and vice versa.
 
 In each XY / XZ / YZ planes in the 3D boolean table,
 there are no two "True" value exist in the same row or same col.
-That is "N-Towers problem"  ("something like N-Queens but the pieces are tower").
-Solving those N-Towers problem would finally solve the Sudoku game.
+That is "N-Rooks problem"  ("something like N-Queens but the pieces are rook").
+Solving those N-Rooks problem would finally solve the Sudoku game.
 
 Other than the XY / XZ / YZ planes, there are 3 special cases to handle.
 
 Case 1: Square units
 
-To solve the square units, we transform the 9 unit into 9 N-Tower problems. (w_transform)
+To solve the square units, we transform the 9 unit into 9 N-Rook problems. (w_transform)
 
 Case 2: Sub group exclusion
 
@@ -82,16 +82,16 @@ Now we merge 3 boxes horizontally by "or" operator, the boolean value become:
     111
     111
 
-Than we can solve this 3x3 N-towers problems, to mark all z=1 in C boxes to be false.
+Than we can solve this 3x3 N-rooks problems, to mark all z=1 in C boxes to be false.
 That is implemented as v_transform
 
 Case 3: Diagonal unit
 
-To solve the diagonal units, we transform the 2 unit into 2 N-Tower problems. (pick_diag)
+To solve the diagonal units, we transform the 2 unit into 2 N-Rook problems. (pick_diag)
 
-### N-tower problem
+### N-rook problem
 
-Case 1: 3x3 N-tower problem example:
+Case 1: 3x3 N-rook problem example:
 
     001
     111
@@ -104,7 +104,7 @@ The table will become:
     110
     110
 
-Case 2: 4x4 N-tower problem example:
+Case 2: 4x4 N-rook problem example:
 
     0011
     0011
@@ -121,7 +121,7 @@ In r1 and r2, there should be 1 in c3 and c4, so r3c3, r3c4, r4c3, r4c4 should b
 Case 1 is level-1 reduction, as the reduction is start from data in 1 row.
 Case 2 is level-2 reduction, as the reduction is start from data in 2 row.
 
-In 9x9 N-tower problem
+In 9x9 N-rook problem
 For level-1 reduction, we check the board 9 times.
 For level-2 reduction, we check the board 9C2 = 36 times.
 For level-3 reduction, we check the board 9C3 = 84 times.
@@ -131,9 +131,9 @@ In order to speed up the calculation,
 We should avoid using high level reduction, unless all lower reduction are not working.
 
 
-### N-Tower and known Sudoku reduction strategies
+### N-Rook and known Sudoku reduction strategies
 
-Nearly all Sudoku reduction strategies can be transformed to N-tower problem.
+Nearly all Sudoku reduction strategies can be transformed to N-rook problem.
 (In fact, all reduction strategies I know can be transformed,
 I say "nearly" just because other strategies may exist.)
 
@@ -146,7 +146,7 @@ Compare with http://www.sudokudragon.com/sudokustrategy.htm
 * Sub-group exclusion rule: descripted above, level 1
 * Hidden Twin exclusion rule: level 2 
 * Naked Twin exclusion rule: level 2
-* General permutation rule: the n-tower problem
+* General permutation rule: the n-rook problem
 * X-Wing and Swordfish: level 3
 
-If N-towers method not work, we need to do trial and error, which means searching.
+If N-rooks method not work, we need to do trial and error, which means searching.

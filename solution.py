@@ -1,6 +1,6 @@
 import utils
 import sudoku_convert
-import ntower
+import nrook
 import numpy as np
 import sudoku
 import itertools
@@ -42,11 +42,11 @@ def naked_twins(values):
         action_done = False
         nparray102 = np.moveaxis(nparray,range(3),[1,0,2])
         for i in range(sudoku_convert.board_size):
-            action_done = ntower.ntower(nparray[i],2) or action_done
-            action_done = ntower.ntower(nparray102[i],2) or action_done
+            action_done = nrook.nrook(nparray[i],2) or action_done
+            action_done = nrook.nrook(nparray102[i],2) or action_done
         nparray = sudoku.w_transform(nparray)
         for i in range(sudoku_convert.board_size):
-            action_done = ntower.ntower(nparray[i],2) or action_done
+            action_done = nrook.nrook(nparray[i],2) or action_done
         nparray = sudoku.w_transform_reverse(nparray)
         if not action_done:
             break
@@ -94,11 +94,11 @@ def reduce_puzzle(values,enable_diag):
     nparray = sudoku_convert.value_to_nparray(values)
     while(True):
         good = False
-        good = good or reduce_puzzle_ntower(nparray,1,1,False,enable_diag)
+        good = good or reduce_puzzle_nrook(nparray,1,1,False,enable_diag)
         good = good or sub_group_exclusion(nparray,True)
-        good = good or reduce_puzzle_ntower(nparray,2,2,True,enable_diag)
-        good = good or reduce_puzzle_ntower(nparray,3,2,True,enable_diag)
-        good = good or reduce_puzzle_ntower(nparray,4,2,True,enable_diag)
+        good = good or reduce_puzzle_nrook(nparray,2,2,True,enable_diag)
+        good = good or reduce_puzzle_nrook(nparray,3,2,True,enable_diag)
+        good = good or reduce_puzzle_nrook(nparray,4,2,True,enable_diag)
         if not good:
             break
         assign_value_nparray(values, nparray)
@@ -107,40 +107,40 @@ def reduce_puzzle(values,enable_diag):
     nparray_any2_all = np.any(nparray,2).all()
     return values if nparray_any2_all else False
 
-def reduce_puzzle_ntower(nparray,level,min_level,ret_when_ok,enable_diag):
-    # print('reduce_puzzle_ntower {}'.format(level))
+def reduce_puzzle_nrook(nparray,level,min_level,ret_when_ok,enable_diag):
+    # print('reduce_puzzle_nrook {}'.format(level))
     ret = False
     for axis in itertools.permutations(range(3)):
         nparray0 = np.moveaxis(nparray,range(3),axis)
-        ret = reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok) or ret
+        ret = reduce_puzzle_nrook_all(nparray0,level,min_level,ret_when_ok) or ret
         if ret and ret_when_ok:
             return True
     if enable_diag:
         nparray0 = sudoku.pick_diag(nparray)
-        ret = reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok) or ret
+        ret = reduce_puzzle_nrook_all(nparray0,level,min_level,ret_when_ok) or ret
         sudoku.put_diag(nparray,nparray0)
         if ret and ret_when_ok:
             return True
-    ret = reduce_puzzle_ntower_w(nparray,level,min_level,ret_when_ok) or ret
+    ret = reduce_puzzle_nrook_w(nparray,level,min_level,ret_when_ok) or ret
     if ret and ret_when_ok:
         return True
     return ret
 
-def reduce_puzzle_ntower_w(nparray,level,min_level,ret_when_ok):
+def reduce_puzzle_nrook_w(nparray,level,min_level,ret_when_ok):
     nparray0 = sudoku.w_transform(nparray)
     ret = False
-    ret = (ret_when_ok and ret) or reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok) or ret
-    ret = (ret_when_ok and ret) or reduce_puzzle_ntower_all(np.moveaxis(nparray0,range(3),[0,2,1]),level,min_level,ret_when_ok) or ret
+    ret = (ret_when_ok and ret) or reduce_puzzle_nrook_all(nparray0,level,min_level,ret_when_ok) or ret
+    ret = (ret_when_ok and ret) or reduce_puzzle_nrook_all(np.moveaxis(nparray0,range(3),[0,2,1]),level,min_level,ret_when_ok) or ret
     if not ret:
         return ret
     nparray1 = sudoku.w_transform_reverse(nparray0)
     np.copyto(nparray,nparray1)
     return ret
 
-def reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok):
+def reduce_puzzle_nrook_all(nparray0,level,min_level,ret_when_ok):
     ret = False
     for nparray0_i in nparray0:
-        ret = ntower.ntower(nparray0_i,level,min_level) or ret
+        ret = nrook.nrook(nparray0_i,level,min_level) or ret
         if ret and ret_when_ok:
             return ret
     return ret
@@ -158,8 +158,8 @@ def sub_group_exclusion_0(nparray):
     nparray_vt = np.moveaxis(nparray_v,range(3),[0,2,1])
     while(True):
         ret_i = False
-        ret_i = reduce_puzzle_ntower_all(nparray_v,1,1,False) or ret_i
-        ret_i = reduce_puzzle_ntower_all(nparray_vt,1,1,False) or ret_i
+        ret_i = reduce_puzzle_nrook_all(nparray_v,1,1,False) or ret_i
+        ret_i = reduce_puzzle_nrook_all(nparray_vt,1,1,False) or ret_i
         ret = ret or ret_i
         if not ret_i:
             break
