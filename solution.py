@@ -109,13 +109,11 @@ def reduce_puzzle_ntower(nparray,level,min_level,ret_when_ok):
     ret = False
     for axis in itertools.permutations(range(3)):
         nparray0 = np.moveaxis(nparray,range(3),axis)
-        for nparray0_i in nparray0:
-            ret = ntower.ntower(nparray0_i,level,min_level) or ret
-            if ret and ret_when_ok:
-                return True
+        ret = reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok) or ret
+        if ret and ret_when_ok:
+            return True
     nparray0 = sudoku.pick_diag(nparray)
-    for nparray0_i in nparray0:
-        ret = (ret_when_ok and ret) or ntower.ntower(nparray0_i,level,min_level) or ret
+    ret = reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok) or ret
     sudoku.put_diag(nparray,nparray0)
     if ret and ret_when_ok:
         return True
@@ -130,15 +128,15 @@ def reduce_puzzle_ntower(nparray,level,min_level,ret_when_ok):
 def reduce_puzzle_ntower_w(nparray,level,min_level,ret_when_ok):
     nparray0 = sudoku.w_transform(nparray)
     ret = False
-    ret = (ret_when_ok and ret) or reduce_puzzle_ntower_w_0(nparray0,level,min_level,ret_when_ok) or ret
-    ret = (ret_when_ok and ret) or reduce_puzzle_ntower_w_0(np.moveaxis(nparray0,range(3),[0,2,1]),level,min_level,ret_when_ok) or ret
+    ret = (ret_when_ok and ret) or reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok) or ret
+    ret = (ret_when_ok and ret) or reduce_puzzle_ntower_all(np.moveaxis(nparray0,range(3),[0,2,1]),level,min_level,ret_when_ok) or ret
     if not ret:
         return ret
     nparray1 = sudoku.w_transform_reverse(nparray0)
     np.copyto(nparray,nparray1)
     return ret
 
-def reduce_puzzle_ntower_w_0(nparray0,level,min_level,ret_when_ok):
+def reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok):
     ret = False
     for nparray0_i in nparray0:
         ret = ntower.ntower(nparray0_i,level,min_level) or ret
@@ -152,10 +150,8 @@ def sub_group_exclusion(nparray):
     nparray_vt = np.moveaxis(nparray_v,range(3),[0,2,1])
     while(True):
         ret_i = False
-        for nparray_vi in nparray_v:
-            ret_i = ntower.ntower(nparray_vi,1) or ret_i
-        for nparray_vi in nparray_vt:
-            ret_i = ntower.ntower(nparray_vi,1) or ret_i
+        ret_i = reduce_puzzle_ntower_all(nparray_v,1,1,False) or ret_i
+        ret_i = reduce_puzzle_ntower_all(nparray_vt,1,1,False) or ret_i
         ret = ret or ret_i
         if not ret_i:
             break
