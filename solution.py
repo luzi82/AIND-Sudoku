@@ -95,7 +95,7 @@ def reduce_puzzle(values):
     while(True):
         good = False
         good = good or reduce_puzzle_ntower(nparray,1,1,False)
-        good = good or sub_group_exclusion(nparray)
+        good = good or sub_group_exclusion(nparray,True)
         good = good or reduce_puzzle_ntower(nparray,2,2,True)
         good = good or reduce_puzzle_ntower(nparray,3,2,True)
         good = good or reduce_puzzle_ntower(nparray,4,2,True)
@@ -141,7 +141,13 @@ def reduce_puzzle_ntower_all(nparray0,level,min_level,ret_when_ok):
             return ret
     return ret
 
-def sub_group_exclusion(nparray):
+def sub_group_exclusion(nparray,ret_when_ok):
+    ret = False
+    ret = (ret_when_ok and ret) or sub_group_exclusion_0(nparray) or ret
+    ret = (ret_when_ok and ret) or sub_group_exclusion_0(np.moveaxis(nparray,range(3),[1,0,2])) or ret
+    return ret
+
+def sub_group_exclusion_0(nparray):
     ret = False
     nparray_v = sudoku.v_transform(nparray)
     nparray_vt = np.moveaxis(nparray_v,range(3),[0,2,1])
