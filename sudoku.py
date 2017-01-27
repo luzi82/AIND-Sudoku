@@ -27,6 +27,18 @@ def v_transform_reverse(nparray):
     nparray = np.reshape(nparray,[9,9,9])
     return nparray
 
+def pick_diag(nparray):
+    ret = np.zeros([2,9,9],dtype=np.int_)
+    for i in range(9):
+        np.copyto(ret[0][i], nparray[i][i])
+        np.copyto(ret[1][i], nparray[i][8-i])
+    return ret
+
+def pick_diag_reverse(nparray,diag):
+    for i in range(9):
+        np.copyto(nparray[i][i],   ret[0][i])
+        np.copyto(nparray[i][8-i], ret[1][i])
+
 if __name__ == '__main__':
     import unittest
     import utils
