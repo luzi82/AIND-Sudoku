@@ -4,6 +4,7 @@ import ntower
 import numpy as np
 import sudoku
 import itertools
+import copy
 
 assignments = []
 
@@ -18,7 +19,7 @@ def assign_value(values, box, value):
     return values
 
 def assign_value_nparray(values, nparray):
-    value0 = nparray_to_value(nparray)
+    value0 = sudoku_convert.nparray_to_value(nparray)
     for box in values:
         if values[box] == value0[box]:
             continue
@@ -83,11 +84,11 @@ grid_values = utils.grid_values
 
 display = utils.display
 
-def eliminate(values):
-    pass
+#def eliminate(values):
+#    pass
 
-def only_choice(values):
-    pass
+#def only_choice(values):
+#    pass
 
 def reduce_puzzle(values):
     nparray = sudoku_convert.value_to_nparray(values)
@@ -101,6 +102,8 @@ def reduce_puzzle(values):
         if not good:
             break
         assign_value_nparray(values, nparray)
+    nparray_any2_all = np.any(nparray,2).all()
+    return values if nparray_any2_all else False
 
 def reduce_puzzle_ntower(nparray,level,min_level,ret_when_ok):
     ret = False
@@ -110,6 +113,12 @@ def reduce_puzzle_ntower(nparray,level,min_level,ret_when_ok):
             ret = ntower.ntower(nparray0_i,level,min_level) or ret
             if ret and ret_when_ok:
                 return True
+    nparray0 = sudoku.pick_diag(nparray)
+    for nparray0_i in nparray0:
+        ret = (ret_when_ok and ret) or ntower.ntower(nparray0_i,level,min_level) or ret
+    sudoku.put_diag(nparray,nparray0)
+    if ret and ret_when_ok:
+        return True
     ret = reduce_puzzle_ntower_w(nparray,level,min_level,ret_when_ok) or ret
     if ret and ret_when_ok:
         return True
@@ -129,11 +138,12 @@ def reduce_puzzle_ntower_w(nparray,level,min_level,ret_when_ok):
     np.copyto(nparray,nparray1)
     return ret
 
-def reduce_puzzle_ntower_w_0(nparray,level,min_level,ret_when_ok):
+def reduce_puzzle_ntower_w_0(nparray0,level,min_level,ret_when_ok):
+    ret = False
     for nparray0_i in nparray0:
         ret = ntower.ntower(nparray0_i,level,min_level) or ret
         if ret and ret_when_ok:
-            return True
+            return ret
     return ret
 
 def sub_group_exclusion(nparray):
@@ -156,7 +166,37 @@ def sub_group_exclusion(nparray):
     return ret
 
 def search(values):
-    pass
+    "Using depth-first search and propagation, create a search tree and solve the sudoku."
+    # First, reduce the puzzle using the previous function
+    x = reduce_puzzle(values)
+    if x == False:
+        return False
+
+    # Chose one of the unfilled square s with the fewest possibilities
+    min_box = None
+    min_len = 999
+    for k,v in values.items():
+        if len(v) <= 1:
+            continue
+        if len(v) >= min_len:
+            continue
+        min_box = k
+        min_len = len(v)
+
+    if min_box == None:
+        return values
+
+    # Now use recursion to solve each one of the resulting sudokus, and if one returns a value (not False), return that answer!
+    for c in list(values[min_box]):
+        values0 = copy.copy(values)
+        values0[min_box] = c
+        x = search(values0)
+        if x != False:
+            values.update(x)
+            return values
+
+    # If you're stuck, see the solution.py tab!
+    return False
 
 def solve(grid):
     """
@@ -167,6 +207,7 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
+    return search(grid_values(grid))
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
